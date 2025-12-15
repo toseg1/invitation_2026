@@ -1,0 +1,198 @@
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { TearablePoster } from './components/TearablePoster';
+import { EventDetails } from './components/EventDetails';
+import { TrendingUp, Terminal } from 'lucide-react';
+
+// Textures with Tech Vibe
+const DATACENTER_TEXTURE = "https://images.unsplash.com/photo-1558494949-ef526b0042a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+const CHART_TEXTURE = "https://images.unsplash.com/photo-1611974765270-ca12586343bb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+
+// No-op sound functions
+const playTechTearSound = () => {};
+const playSuccessSound = () => {};
+
+function App() {
+  const [removedLayers, setRemovedLayers] = useState<number[]>([]);
+  
+  // Stable ref for Konami logic
+  const konamiIndexRef = useRef(0);
+  const KONAMI_CODE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+        const currentIndex = konamiIndexRef.current;
+        if (e.key === KONAMI_CODE[currentIndex]) {
+            konamiIndexRef.current = currentIndex + 1;
+            if (konamiIndexRef.current === KONAMI_CODE.length) {
+                setRemovedLayers([]); // Reset
+                konamiIndexRef.current = 0;
+                playSuccessSound();
+            }
+        } else {
+            konamiIndexRef.current = 0;
+            if (e.key === KONAMI_CODE[0]) konamiIndexRef.current = 1;
+        }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []); 
+
+  // Memoize callbacks - NO dependencies needed because of functional update
+  const handleTear = useCallback((layerIndex: number) => {
+    setRemovedLayers(prev => {
+        if (prev.includes(layerIndex)) return prev;
+        return [...prev, layerIndex];
+    });
+  }, []);
+
+  // Stable wrappers
+  const handleTearLayer1 = useCallback(() => handleTear(1), [handleTear]);
+  const handleTearLayer0 = useCallback(() => handleTear(0), [handleTear]);
+
+  return (
+    <div className="min-h-screen w-full flex items-center justify-center overflow-hidden relative bg-[#050505] font-mono select-none">
+      {/* Background Tech Grid */}
+      <div 
+        className="absolute inset-0 z-0 opacity-10"
+        style={{ 
+            backgroundImage: `linear-gradient(#00ff00 1px, transparent 1px), linear-gradient(90deg, #00ff00 1px, transparent 1px)`,
+            backgroundSize: '50px 50px',
+            transform: 'perspective(500px) rotateX(60deg) translateY(-100px) scale(2)'
+        }}
+      />
+      
+      {/* Floating Code Particles */}
+      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none overflow-hidden">
+         <div className="absolute top-10 left-10 text-[#00ff00] text-xs animate-pulse">0xDEADBEEF</div>
+         <div className="absolute bottom-20 right-20 text-[#00ff00] text-xs animate-pulse delay-75">SEGFAULT</div>
+         <div className="absolute top-1/2 left-20 text-[#00ff00] text-xs animate-bounce delay-150">HODL</div>
+      </div>
+
+      {/* Main Container */}
+      <div className="relative w-full max-w-md aspect-[3/5] md:aspect-[4/6] lg:h-[800px] lg:w-[550px] z-10 m-4">
+        
+        {/* Layer 2: Event Details (Bottom - visible at the end) */}
+        <div className="absolute inset-0 shadow-[0_0_100px_rgba(0,255,0,0.1)] bg-black border border-[#333]">
+            <EventDetails />
+        </div>
+
+        {/* Layer 1: Crypto / Stonks / Meme Layer (Middle) */}
+        {!removedLayers.includes(1) && (
+            <div key="layer-1" className="absolute inset-0 transform rotate-1 z-20">
+                <TearablePoster
+                    onTear={handleTearLayer1}
+                    onTearStart={playTechTearSound}
+                    isTorn={false}
+                    className="shadow-2xl"
+                >
+                    <div className="absolute inset-0 shadow-[0_0_100px_rgba(0,255,0,0.1)] bg-gradient-to-b from-slate-900 to-slate-800 border-4 border-[#00ff00]">
+            <div 
+                className="absolute inset-0 opacity-40 mix-blend-luminosity"
+                style={{ backgroundImage: `url(${CHART_TEXTURE})`, backgroundSize: 'cover' }}
+            />
+            <div className="relative z-10 h-full flex flex-col p-6">
+                <div className="bg-[#00ff00] text-black px-4 py-2 font-black text-2xl transform -rotate-2 self-start inline-block mb-8 shadow-[4px_4px_0px_black]">
+                    STONKS ONLY GO UP 🚀
+                </div>
+                <div className="flex-1 relative">
+                    <div className="absolute bottom-0 left-1/4 w-16 h-[60%] bg-[#00ff00] border-2 border-black shadow-[0_0_20px_#00ff00] flex flex-col items-center justify-end pb-2">
+                        <span className="text-black font-bold vertical-text transform -rotate-90">PUMP IT</span>
+                    </div>
+                    <div className="absolute bottom-10 left-[30%] w-1 h-[80%] bg-[#00ff00]" />
+                    <div className="absolute top-10 right-0 transform rotate-12">
+                        <div className="bg-white p-2 border-2 border-black shadow-[4px_4px_0px_black]">
+                            <p className="text-4xl">🐸</p>
+                            <p className="font-black text-xs bg-black text-white px-1">RARE PEPE</p>
+                        </div>
+                    </div>
+                    <div className="absolute bottom-20 right-4 text-right">
+                        <div className="text-white font-bold text-4xl drop-shadow-md">
+                            HODL
+                        </div>
+                        <div className="text-[#00ff00] font-mono text-sm animate-pulse">
+                            +420.69% (24h)
+                        </div>
+                    </div>
+                </div>
+                <div className="mt-auto bg-red-600 text-white font-bold p-2 transform rotate-2 text-center border-2 border-white shadow-lg">
+                    <div className="flex items-center justify-center gap-2">
+                        <TrendingUp className="w-6 h-6" />
+                        <span>BUY THE DIP</span>
+                    </div>
+                </div>
+            </div>
+            <div className="absolute inset-0 bg-[url('https://media.giphy.com/media/o0vwzuFxE437y/giphy.gif')] opacity-5 mix-blend-overlay pointer-events-none" />
+                    </div>
+                </TearablePoster>
+            </div>
+        )}
+
+        {/* Layer 0: Code & Triathlon Nerd Layer (Top - tear this first) */}
+        {!removedLayers.includes(0) && (
+            <div key="layer-0" className="absolute inset-0 transform -rotate-1 z-30">
+                <TearablePoster
+                    onTear={handleTearLayer0}
+                    onTearStart={playTechTearSound}
+                    isTorn={false}
+                    className="shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                >
+                    <div className="w-full h-full bg-[#1e1e1e] flex flex-col relative overflow-hidden border-4 border-blue-500">
+                         <div 
+                            className="absolute inset-0 opacity-30 mix-blend-overlay"
+                            style={{ backgroundImage: `url(${DATACENTER_TEXTURE})`, backgroundSize: 'cover' }}
+                        />
+                        <div className="flex flex-col h-full p-6 relative z-10">
+                            <div className="flex justify-between items-center mb-4 border-b border-gray-600 pb-2">
+                                <div className="text-blue-400 text-xs font-bold">vim training_plan.py</div>
+                                <div className="text-gray-500 text-xs">-- INSERT --</div>
+                            </div>
+                            <div className="font-mono text-sm space-y-2 text-gray-300">
+                                <p><span className="text-purple-400">import</span> <span className="text-yellow-300">caffeine</span></p>
+                                <br/>
+                                <p><span className="text-purple-400">class</span> <span className="text-blue-300">Triathlete</span>(<span className="text-green-300">Nerd</span>):</p>
+                                <p className="pl-4"><span className="text-purple-400">def</span> <span className="text-blue-300">optimize_life</span>(self):</p>
+                                <p className="pl-8"><span className="text-purple-400">while</span> <span className="text-cyan-300">self</span>.hr {'<'} <span className="text-orange-400">180</span>:</p>
+                                <p className="pl-12"><span className="text-yellow-300">self</span>.run_faster()</p>
+                                <p className="pl-12"><span className="text-gray-500"># TODO: Fix knee pain</span></p>
+                                <p className="pl-12"><span className="text-yellow-300">caffeine</span>.inject()</p>
+                                <br/>
+                                <p><span className="text-purple-400">return</span> <span className="text-green-300">"KOM"</span></p>
+                            </div>
+                            <div className="absolute bottom-20 right-4 bg-yellow-200 text-black p-4 transform -rotate-3 shadow-lg font-handwriting max-w-[150px] border border-yellow-400">
+                                <p className="font-bold text-sm mb-2">To Do:</p>
+                                <ul className="text-xs list-disc pl-4">
+                                    <li>Buy carbon shoes</li>
+                                    <li>Debug server</li>
+                                    <li>Shave legs??</li>
+                                </ul>
+                            </div>
+                            <div className="absolute top-1/2 left-0 right-0 text-center transform -rotate-12 pointer-events-none mix-blend-hard-light">
+                                <h2 className="text-7xl font-black text-blue-500 opacity-20">
+                                    ZONE 2<br/>ONLY
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+                </TearablePoster>
+            </div>
+        )}
+
+      </div>
+
+        {/* Instructions */}
+        {removedLayers.length < 3 && (
+            <div className="absolute bottom-8 left-0 right-0 text-center z-50 pointer-events-none">
+                <div className="inline-flex items-center gap-2 bg-black text-[#00ff00] px-6 py-3 border-2 border-[#00ff00] shadow-[0_0_10px_#00ff00] animate-bounce">
+                    <Terminal className="w-4 h-4" />
+                    <span className="font-black text-sm uppercase tracking-widest">
+                        TEAR THE SYSTEM
+                    </span>
+                </div>
+            </div>
+        )}
+    </div>
+  );
+}
+
+export default App;
