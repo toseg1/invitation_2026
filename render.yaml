@@ -9,7 +9,7 @@ services:
     envVars:
       - key: DATABASE_URL
         fromDatabase:
-          name: # Add your PostgreSQL database name here
+          name: toseg1-data
           property: connectionString
 
   # Frontend Static Site
