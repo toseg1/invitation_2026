@@ -224,16 +224,16 @@ export const EventDetails = () => {
 
         <div className="p-3 sm:p-4 flex-1 flex flex-col overflow-y-auto">
             {/* Header */}
-            <div className="mb-4 sm:mb-8 relative">
+            <div className="mb-3 sm:mb-8 relative">
                 <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-[#00ff00] to-transparent" />
-                <h4 className="text-[#00ff00] font-bold text-sm mb-1 tracking-wider">README.md</h4>
-                <h1 className="text-5xl md:text-6xl font-black uppercase leading-[0.8] tracking-tighter mix-blend-exclusion">
+                <h4 className="text-[#00ff00] font-bold text-xs sm:text-sm mb-0.5 sm:mb-1 tracking-wider">README.md</h4>
+                <h1 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase leading-[0.8] tracking-tighter mix-blend-exclusion">
                     JE<br/>QUITTE<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ff00] to-emerald-600">LA FRANCE</span>
                 </h1>
             </div>
 
             {/* Grid Info */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-8">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-8">
                 <div className="border border-[#333] p-2 sm:p-3 hover:border-[#00ff00] transition-colors group">
                     <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mb-1 sm:mb-2 group-hover:text-[#00ff00]" />
                     <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase">Timestamp</p>
@@ -261,17 +261,17 @@ export const EventDetails = () => {
             </div>
 
             {/* Info Box */}
-            <div className="border border-[#333] p-3 sm:p-4 mb-4 sm:mb-6 hover:border-[#00ff00]/50 transition-colors bg-[#0a0a0a]/50">
-                <ul className="space-y-2 text-xs sm:text-sm text-gray-300">
-                    <li className="flex items-start gap-2">
+            <div className="border border-[#333] p-2 sm:p-4 mb-3 sm:mb-6 hover:border-[#00ff00]/50 transition-colors bg-[#0a0a0a]/50">
+                <ul className="space-y-1.5 sm:space-y-2 text-[10px] sm:text-sm text-gray-300">
+                    <li className="flex items-start gap-1.5 sm:gap-2">
                         <span className="text-[#00ff00] mt-0.5">▸</span>
                         <span>Possibilité de <span className="text-[#00ff00]">logement / camping</span> sur place</span>
                     </li>
-                    <li className="flex items-start gap-2">
+                    <li className="flex items-start gap-1.5 sm:gap-2">
                         <span className="text-[#00ff00] mt-0.5">▸</span>
                         <span>Plus d'infos, contactez moi au <span className="text-[#00ff00] font-bold">07 70 70 60 27</span> / <span className="text-[#00ff00] font-bold">theo.seguin@free.fr</span></span>
                     </li>
-                    
+
                 </ul>
             </div>
 
@@ -286,7 +286,7 @@ export const EventDetails = () => {
             {/* Footer Button */}
             <button
               onClick={() => setShowForm(true)}
-              className="w-full mt-3 sm:mt-4 bg-[#00ff00] text-black font-black py-3 sm:py-4 text-base sm:text-xl uppercase hover:bg-[#00cc00] hover:scale-[1.02] transition-all border-b-4 border-[#009900] active:border-0 active:translate-y-[4px]"
+              className="w-full mt-2 sm:mt-4 bg-[#00ff00] text-black font-black py-2.5 sm:py-4 text-sm sm:text-xl uppercase hover:bg-[#00cc00] hover:scale-[1.02] transition-all border-b-4 border-[#009900] active:border-0 active:translate-y-[4px] flex-shrink-0"
             >
                 COMFIRME TA VENUE
             </button>
