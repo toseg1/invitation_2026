@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import psycopg2
-import psycopg2.extras
+import psycopg
+from psycopg.rows import dict_row
 import os
 from datetime import datetime
 
@@ -12,7 +12,7 @@ CORS(app)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def get_db():
-    conn = psycopg2.connect(DATABASE_URL)
+    conn = psycopg.connect(DATABASE_URL)
     return conn
 
 def init_db():
@@ -69,7 +69,7 @@ def submit_rsvp():
 @app.route('/api/rsvp', methods=['GET'])
 def get_rsvps():
     conn = get_db()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor = conn.cursor(row_factory=dict_row)
     cursor.execute('SELECT * FROM rsvp ORDER BY timestamp DESC')
     rows = cursor.fetchall()
     cursor.close()
@@ -113,7 +113,7 @@ def delete_rsvp(rsvp_id):
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
     conn = get_db()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cursor = conn.cursor(row_factory=dict_row)
     cursor.execute('SELECT SUM(lunch_count) as total_lunch, SUM(dinner_count) as total_dinner, COUNT(*) as total_responses FROM rsvp')
     row = cursor.fetchone()
     cursor.close()
