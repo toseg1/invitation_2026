@@ -32,22 +32,35 @@ def init_db():
 @app.route('/api/rsvp', methods=['POST'])
 def submit_rsvp():
     data = request.json
+
+    # Validate input
+    if not data:
+        return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+    name = data.get('name', 'Anonymous').strip()
+    email = data.get('email', '').strip()
+
+    # Validate lunch and dinner counts
+    try:
+        lunch_count = int(data.get('lunch_count', 0))
+        dinner_count = int(data.get('dinner_count', 0))
+
+        if lunch_count < 0 or dinner_count < 0:
+            return jsonify({'success': False, 'message': 'Counts cannot be negative'}), 400
+    except (ValueError, TypeError):
+        return jsonify({'success': False, 'message': 'Invalid count values'}), 400
+
     conn = get_db()
     cursor = conn.cursor()
-    
+
     cursor.execute('''
         INSERT INTO rsvp (name, email, lunch_count, dinner_count)
         VALUES (?, ?, ?, ?)
-    ''', (
-        data.get('name', 'Anonymous'),
-        data.get('email', ''),
-        data.get('lunch_count', 0),
-        data.get('dinner_count', 0)
-    ))
-    
+    ''', (name, email, lunch_count, dinner_count))
+
     conn.commit()
     conn.close()
-    
+
     return jsonify({'success': True, 'message': 'RSVP submitted successfully'})
 
 @app.route('/api/rsvp', methods=['GET'])
@@ -70,6 +83,26 @@ def get_rsvps():
         })
     
     return jsonify(rsvps)
+
+@app.route('/api/rsvp/<int:rsvp_id>', methods=['DELETE'])
+def delete_rsvp(rsvp_id):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # Check if the RSVP exists
+    cursor.execute('SELECT * FROM rsvp WHERE id = ?', (rsvp_id,))
+    rsvp = cursor.fetchone()
+
+    if not rsvp:
+        conn.close()
+        return jsonify({'success': False, 'message': 'RSVP not found'}), 404
+
+    # Delete the RSVP
+    cursor.execute('DELETE FROM rsvp WHERE id = ?', (rsvp_id,))
+    conn.commit()
+    conn.close()
+
+    return jsonify({'success': True, 'message': 'RSVP deleted successfully'})
 
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
@@ -95,4 +128,8 @@ def admin():
 
 if __name__ == '__main__':
     init_db()
-    app.run(host='0.0.0.0', port=5002, debug=True)
+    port = int(os.environ.get('PORT', 5002))
+    app.run(host='0.0.0.0', port=port, debug=True)
+
+# Initialize DB on startup (for production)
+init_db()

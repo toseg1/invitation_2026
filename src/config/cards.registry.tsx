@@ -3,6 +3,7 @@ import { CodeTriathlonCard } from '../components/cards/CodeTriathlonCard';
 import { CryptoStonksCard } from '../components/cards/CryptoStonksCard';
 import { DJAnnouncementCard } from '../components/cards/DJAnnouncementCard';
 import { SamoaCard } from '../components/cards/SamoaCard';
+import { AboutMeCard } from '../components/cards/AboutMe';
 import { EventDetails } from '../components/EventDetails';
 
 /**
@@ -66,6 +67,17 @@ export const CARD_REGISTRY: Record<string, CardDefinition> = {
     isTearable: true,
     defaultStyling: {
       rotation: 'rotate-2',
+    },
+  },
+
+  'about-me': {
+    id: 'about-me',
+    name: 'About Me',
+    description: 'Personal photo mood board with memories and adventures',
+    component: AboutMeCard,
+    isTearable: true,
+    defaultStyling: {
+      rotation: '-rotate-1',
     },
   },
 

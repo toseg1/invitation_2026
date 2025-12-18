@@ -10,10 +10,27 @@ const playSuccessSound = () => {};
 
 function App() {
   const [removedLayers, setRemovedLayers] = useState<number[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [passwordInput, setPasswordInput] = useState<string>('');
+  const [passwordError, setPasswordError] = useState<boolean>(false);
 
   // Stable ref for Konami code (reset layers)
   const konamiIndexRef = useRef(0);
   const KONAMI_CODE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+
+  // Password validation
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const correctPassword = import.meta.env.VITE_ACCESS_PASSWORD || 'jequittelafrance2026';
+
+    if (passwordInput === correctPassword) {
+      setIsAuthenticated(true);
+      setPasswordError(false);
+    } else {
+      setPasswordError(true);
+      setPasswordInput('');
+    }
+  };
 
   // Handle layer tear
   const handleTear = useCallback((layerIndex: number) => {
@@ -70,7 +87,10 @@ function App() {
 
       // Navigation shortcuts
       // Left Arrow or Backspace: Go back one layer
-      if ((e.key === 'ArrowLeft' || e.key === 'Backspace') && removedLayers.length > 0) {
+      // Don't intercept if user is typing in an input/textarea
+      const isTyping = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+
+      if ((e.key === 'ArrowLeft' || e.key === 'Backspace') && removedLayers.length > 0 && !isTyping) {
         e.preventDefault();
         goBackOneLayer();
       }
@@ -109,6 +129,74 @@ function App() {
 
   // Reverse layers for rendering (top layer should be last in DOM for z-index)
   const reversedLayers = [...layers].reverse();
+
+  // Show password screen if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center overflow-hidden relative font-mono bg-black">
+        {/* CSS Grid Background */}
+        <div
+          className="absolute inset-0 opacity-20 pointer-events-none"
+          style={{
+            backgroundImage: `linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)`,
+            backgroundSize: '20px 20px'
+          }}
+        />
+
+        {/* Password Form */}
+        <div className="z-10 w-full max-w-md mx-4">
+          <div className="border border-[#333] bg-black/50 backdrop-blur-sm">
+            {/* Top Bar */}
+            <div className="flex justify-between items-center bg-[#111] p-2 border-b border-[#333]">
+              <div className="flex gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500/50" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
+                <div className="w-3 h-3 rounded-full bg-green-500/50" />
+              </div>
+              <span className="text-xs text-gray-500">access@restricted</span>
+            </div>
+
+            {/* Content */}
+            <div className="p-8">
+              <h1 className="text-4xl font-black text-[#00ff00] mb-2 uppercase">ACCÈS</h1>
+              <p className="text-gray-400 text-sm mb-8">Entre le mot de passe pour continuer</p>
+
+              <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-[#00ff00] mb-2 font-semibold text-sm">MOT DE PASSE</label>
+                  <input
+                    type="password"
+                    value={passwordInput}
+                    onChange={(e) => {
+                      setPasswordInput(e.target.value);
+                      setPasswordError(false);
+                    }}
+                    placeholder="Mon awesome password"
+                    className={`w-full px-3 py-3 bg-[#0a0a0a] text-white rounded border ${
+                      passwordError ? 'border-red-500' : 'border-[#333]'
+                    } focus:border-[#00ff00] outline-none font-mono`}
+                    autoFocus
+                  />
+                  {passwordError && (
+                    <p className="text-red-500 text-sm mt-2 font-semibold">
+                      ✗ Mot de passe invalide. Réessaie.
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-[#00ff00] text-black font-bold py-3 rounded uppercase hover:bg-[#00cc00] transition-all border-b-4 border-[#009900] active:border-0 active:translate-y-[4px]"
+                >
+                  GO
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

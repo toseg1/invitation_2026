@@ -41,15 +41,12 @@ export const SamoaCard = () => {
           <div className="coord-location">Apia</div>
         </div>
 
-        {/* Main Headline - Artistic Placement */}
-        <div 
-          className="headline"
-          style={{
-            transform: `translate(${mousePosition.x * 0.8}px, ${mousePosition.y * 0.8}px)`,
-          }}
-        >
-          Je quitte la France
-        </div>
+          {/* Main Headline */}
+          <div className="headline">
+            <p className="a-centered">Départ</p>
+            <p className="a-centered">à</p>
+            <p className="samoa-text">SAMOA</p>
+          </div>
 
         {/* Flight Path Visual - Minimal */}
         <div className="flight-path">
@@ -71,26 +68,9 @@ export const SamoaCard = () => {
           </svg>
         </div>
 
-        {/* Destination - Massive Display Text */}
-        <div 
-          className="destination"
-          style={{
-            transform: `translate(${mousePosition.x * 1.2}px, ${mousePosition.y * 1.2}px)`,
-          }}
-        >
-          <div className="destination-text">SAMOA</div>
-          <div className="destination-subtitle">Paradise Awaits</div>
-        </div>
+        
 
-        {/* Achievement - No Box, Just Text */}
-        <div className="achievement">
-          <svg className="unlock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="5" y="11" width="14" height="10" rx="2" strokeWidth="1.5"/>
-            <path d="M12 15v2" strokeWidth="1.5" strokeLinecap="round"/>
-            <path d="M7 11V7a5 5 0 0 1 9.9-1" strokeWidth="1.5" strokeLinecap="round"/>
-          </svg>
-          <span className="achievement-text">New Adventure Unlocked</span>
-        </div>
+       
 
         {/* Subtle Decorative Elements */}
         <div className="palm-accent palm-left">
@@ -143,7 +123,7 @@ export const SamoaCard = () => {
         </div>
 
         {/* Glassmorphism Info Card - Minimal Use */}
-        <div 
+        <div
           className="info-glass"
           style={{
             transform: `translate(${mousePosition.x * -0.5}px, ${mousePosition.y * -0.5}px)`,
@@ -158,6 +138,12 @@ export const SamoaCard = () => {
             <span className="info-label">To</span>
             <span className="info-value">Apia, Samoa</span>
           </div>
+        </div>
+
+        {/* Achievement Box - Game Style */}
+        <div className="achievement-box">
+          <div className="achievement-icon">🏝️</div>
+          <div className="achievement-text">Nouvelle aventure débloquée</div>
         </div>
 
       </div>
@@ -232,14 +218,23 @@ export const SamoaCard = () => {
           color: rgba(255, 255, 255, 0.95);
           letter-spacing: 0.08em;
           text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-          transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-          animation: fadeInLeft 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s backwards;
-          line-height: 1.2;
+          line-height: 1.1;
         }
 
-        .headline:hover {
-          transform: translateY(-2px) scale(1.01);
-          text-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
+        .headline p {
+          margin: 0;
+          padding: 0;
+        }
+
+        .headline .a-centered {
+          text-align: center;
+        }
+
+        .headline .samoa-text {
+          color: rgba(32, 178, 170, 0.95);
+          font-size: clamp(70px, 15vw, 110px);
+          font-weight: 100;
+          letter-spacing: 0.01em;
         }
 
         /* Flight Path */
@@ -279,42 +274,58 @@ export const SamoaCard = () => {
           }
         }
 
-        /* Destination - Center-Right, Massive */
+        /* Destination - Left side, matching headline position */
         .destination {
           position: absolute;
-          top: 42%;
-          right: 8%;
-          text-align: right;
+          top: 45%;
+          left: 8%;
+          text-align: left;
           transition: transform 0.3s ease-out;
           animation: fadeInScale 1.5s cubic-bezier(0.16, 1, 0.3, 1) 1.8s backwards;
+          max-width: 85%;
         }
 
         .destination-text {
           font-family: 'Inter', sans-serif;
           font-weight: 100;
-          font-size: clamp(100px, 18vw, 200px);
-          background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(32,178,170,0.9) 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          letter-spacing: 0.15em;
-          line-height: 0.9;
-          text-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-          filter: drop-shadow(0 4px 20px rgba(255,255,255,0.1));
+          font-size: clamp(70px, 15vw, 110px);
+          color: rgba(32, 178, 170, 0.95);
+          letter-spacing: 0.01em;
+          line-height: 1;
+          text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
-        .destination-subtitle {
+        /* Tagline */
+        .tagline {
+          position: absolute;
+          top: 63%;
+          left: 8%;
           font-family: 'Inter', sans-serif;
           font-weight: 300;
-          font-size: clamp(16px, 2vw, 24px);
-          color: rgba(255, 255, 255, 0.75);
-          letter-spacing: 0.2em;
-          margin-top: 12px;
-          text-transform: lowercase;
+          font-size: clamp(18px, 2.5vw, 32px);
+          color: rgba(255, 255, 255, 0.85);
+          letter-spacing: 0.05em;
+          line-height: 1.4;
         }
 
-        .destination:hover .destination-text {
-          filter: drop-shadow(0 6px 30px rgba(32,178,170,0.3));
+        /* Paradise Awaits - Between main text and info card */
+        .paradise-text {
+          position: absolute;
+          top: 63%;
+          left: 8%;
+          font-family: 'Inter', sans-serif;
+          font-weight: 300;
+          font-size: clamp(18px, 2.5vw, 32px);
+          color: rgba(255, 255, 255, 0.85);
+          letter-spacing: 0.15em;
+          text-transform: lowercase;
+          animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 2s backwards;
+          transition: all 0.3s ease;
+        }
+
+        .paradise-text:hover {
+          transform: translateY(-2px);
+          color: rgba(32, 178, 170, 0.95);
         }
 
         /* Achievement - Bottom Left, No Box */
@@ -429,7 +440,7 @@ export const SamoaCard = () => {
           align-items: center;
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          animation: fadeInUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 2.2s backwards;
+          opacity: 1;
         }
 
         .info-glass:hover {
@@ -466,6 +477,80 @@ export const SamoaCard = () => {
           width: 1px;
           height: 40px;
           background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Game Achievement Banner */
+        .achievement-banner {
+          position: absolute;
+          bottom: 8%;
+          left: 8%;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(32, 178, 170, 0.15) 100%);
+          backdrop-filter: blur(8px);
+          border: 2px solid rgba(255, 215, 0, 0.4);
+          border-radius: 12px;
+          padding: 12px 20px;
+          box-shadow: 0 4px 20px rgba(255, 215, 0, 0.2), 0 0 40px rgba(255, 215, 0, 0.1);
+          animation: slideInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 2.8s backwards;
+        }
+
+        .achievement-icon {
+          width: 36px;
+          height: 36px;
+          color: rgba(255, 215, 0, 0.9);
+          animation: rotateStar 3s ease-in-out infinite;
+        }
+
+        .achievement-icon svg {
+          width: 100%;
+          height: 100%;
+          filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+        }
+
+        .achievement-content {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .achievement-title {
+          font-family: 'Inter', sans-serif;
+          font-weight: 400;
+          font-size: 10px;
+          color: rgba(255, 255, 255, 0.6);
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+        }
+
+        .achievement-name {
+          font-family: 'Inter', sans-serif;
+          font-weight: 500;
+          font-size: 16px;
+          color: rgba(255, 215, 0, 0.95);
+          letter-spacing: 0.05em;
+          text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        @keyframes slideInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes rotateStar {
+          0%, 100% {
+            transform: rotate(0deg) scale(1);
+          }
+          50% {
+            transform: rotate(180deg) scale(1.1);
+          }
         }
 
         /* Animation Keyframes */
@@ -522,77 +607,40 @@ export const SamoaCard = () => {
           }
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-          .headline {
-            top: 12%;
-            left: 6%;
-            font-size: 42px;
-          }
-
-          .destination {
-            top: 38%;
-            right: 6%;
-          }
-
-          .destination-text {
-            font-size: 80px;
-          }
-
-          .coordinates {
-            top: 6%;
-            right: 6%;
-            font-size: 11px;
-          }
-
-          .achievement {
-            bottom: 10%;
-            left: 6%;
-            font-size: 14px;
-          }
-
-          .info-glass {
-            bottom: 18%;
-            right: 6%;
-            padding: 16px 24px;
-            gap: 16px;
-          }
-
-          .compass {
-            width: 50px;
-            height: 50px;
-          }
-
-          .palm-accent {
-            display: none;
-          }
+        /* Achievement Box - Game Style */
+        .achievement-box {
+          position: absolute;
+          bottom: 4%;
+          left: 50%;
+          transform: translateX(-50%);
+          backdrop-filter: blur(10px);
+          background: linear-gradient(135deg, rgba(255, 215, 0, 0.12) 0%, rgba(255, 140, 0, 0.08) 100%);
+          border: 1px solid rgba(255, 215, 0, 0.3);
+          border-radius: 12px;
+          padding: 12px 20px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          box-shadow: 0 4px 20px rgba(255, 215, 0, 0.15);
+          opacity: 1;
         }
 
-        @media (max-width: 480px) {
-          .headline {
-            font-size: 36px;
-            letter-spacing: 0.05em;
-          }
-
-          .destination-text {
-            font-size: 60px;
-          }
-
-          .destination-subtitle {
-            font-size: 14px;
-          }
-
-          .info-glass {
-            flex-direction: column;
-            gap: 12px;
-            padding: 16px 20px;
-          }
-
-          .info-divider {
-            width: 60px;
-            height: 1px;
-          }
+        .achievement-icon {
+          font-size: 24px;
+          line-height: 1;
+          flex-shrink: 0;
+          transform: none;
+          animation: none;
         }
+
+        .achievement-text {
+          font-family: 'Inter', sans-serif;
+          font-weight: 400;
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.9);
+          letter-spacing: 0.05em;
+        }
+
       `}</style>
     </div>
   );

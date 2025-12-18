@@ -35,10 +35,9 @@ export const invitationConfig: InvitationConfig = {
    */
   layers: [
     'event-details',    // Bottom layer (revealed at the end)
+    'dj-announcement',
+    'about-me',         // Personal photo mood board
     'samoa-adventure',  // Théo's epic journey to Samoa
-    'dj-announcement',  // DJ lineup card
-    'crypto-stonks',    // Middle layer
-    'code-triathlon',   // Top layer (tear this first)
   ],
 
   /**

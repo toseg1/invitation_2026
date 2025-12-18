@@ -30,6 +30,7 @@ export const TearablePoster: React.FC<TearablePosterProps> = ({
   className
 }) => {
   const [tearing, setTearing] = useState(false);
+  const [touching, setTouching] = useState(false);
   const hasCalledOnTearRef = useRef(false);
 
   const handleInteraction = () => {
@@ -75,13 +76,16 @@ export const TearablePoster: React.FC<TearablePosterProps> = ({
   if (isTorn && !tearing) return null;
 
   return (
-    <div 
+    <div
       className={cn(
         "relative w-full h-full select-none group perspective-1000",
         !tearing && !isTorn && "cursor-pointer",
         className
       )}
       onClick={handleInteraction}
+      onTouchStart={() => setTouching(true)}
+      onTouchEnd={() => setTouching(false)}
+      onTouchCancel={() => setTouching(false)}
     >
       {/* Glitch/Glow effect behind the tear line */}
       <div 
@@ -135,11 +139,15 @@ export const TearablePoster: React.FC<TearablePosterProps> = ({
         <div className="absolute inset-y-0 left-1/2 w-12 bg-gradient-to-r from-black/50 to-transparent pointer-events-none mix-blend-overlay" />
       </div>
       
-      {/* Hint overlay when hovering */}
+      {/* Hint overlay when hovering or touching */}
       {!tearing && (
-        <div className="absolute inset-0 flex items-center justify-center z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <div className={cn(
+          "absolute inset-0 flex items-center justify-center z-30 transition-opacity duration-300 pointer-events-none",
+          touching || "opacity-0 group-hover:opacity-100",
+          touching && "opacity-100"
+        )}>
             <div className="bg-black border-2 border-[#00ff00] text-[#00ff00] px-6 py-3 font-black uppercase tracking-widest shadow-[4px_4px_0px_#00ff00] transform -rotate-2">
-                [ CLICK_TO_FORK ]
+                [ CLICK ]
             </div>
         </div>
       )}

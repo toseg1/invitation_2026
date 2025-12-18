@@ -96,12 +96,130 @@
             color: #888;
             font-size: 0.9em;
         }
+        .delete-btn {
+            background: linear-gradient(90deg, #ec4899, #dc2626);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.9em;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .delete-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+        }
+        .add-form {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        .add-form h2 {
+            color: #00d9ff;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group label {
+            color: #a855f7;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            color: white;
+            font-size: 1em;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+        }
+        .add-btn {
+            background: linear-gradient(90deg, #00d9ff, #a855f7);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        .add-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+        }
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .message.success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #4ade80;
+        }
+        .message.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #f87171;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>BASH 2025 - RSVP Admin Panel</h1>
-        
+        <h1>RSVP Admin Panel</h1>
+
+        <div id="messageContainer"></div>
+
+        <!-- Add New Attendee Form -->
+        <div class="add-form">
+            <h2>➕ Add New Attendee</h2>
+            <form id="addAttendeeForm" onsubmit="addAttendee(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="newName">Name *</label>
+                        <input type="text" id="newName" required placeholder="Enter name">
+                    </div>
+                    <div class="form-group">
+                        <label for="newEmail">Email *</label>
+                        <input type="email" id="newEmail" required placeholder="Enter email">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="newLunch">Lunch Guests</label>
+                        <input type="number" id="newLunch" min="0" value="0" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="newDinner">Dinner Guests</label>
+                        <input type="number" id="newDinner" min="0" value="0" placeholder="0">
+                    </div>
+                </div>
+                <button type="submit" class="add-btn">Add Attendee</button>
+            </form>
+        </div>
+
         <div class="stats" id="stats">
             <div class="stat-card">
                 <div class="stat-value" id="totalResponses">0</div>
@@ -128,23 +246,98 @@
                     <th>Lunch</th>
                     <th>Dinner</th>
                     <th>Submitted</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
                 <tr>
-                    <td colspan="6" class="no-data">Loading data...</td>
+                    <td colspan="7" class="no-data">Loading data...</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
     <script>
+        function showMessage(message, isSuccess) {
+            const container = document.getElementById('messageContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isSuccess ? 'success' : 'error'}`;
+            messageDiv.textContent = message;
+            container.appendChild(messageDiv);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        async function addAttendee(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('newName').value;
+            const email = document.getElementById('newEmail').value;
+            const lunchCount = parseInt(document.getElementById('newLunch').value) || 0;
+            const dinnerCount = parseInt(document.getElementById('newDinner').value) || 0;
+
+            try {
+                const response = await fetch('/api/rsvp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        lunch_count: lunchCount,
+                        dinner_count: dinnerCount
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('✓ Attendee added successfully!', true);
+                    document.getElementById('addAttendeeForm').reset();
+                    loadData(); // Refresh the table
+                } else {
+                    showMessage('✗ Error: ' + result.message, false);
+                }
+            } catch (error) {
+                console.error('Error adding attendee:', error);
+                showMessage('✗ Failed to add attendee. Please try again.', false);
+            }
+        }
+
+        async function deleteAttendee(id, name) {
+            if (!confirm(`Are you sure you want to remove ${name}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/rsvp/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('✓ Attendee removed successfully!', true);
+                    loadData(); // Refresh the table
+                } else {
+                    showMessage('✗ Error: ' + result.message, false);
+                }
+            } catch (error) {
+                console.error('Error deleting attendee:', error);
+                showMessage('✗ Failed to delete attendee. Please try again.', false);
+            }
+        }
+
         async function loadData() {
             try {
                 // Load stats
                 const statsResponse = await fetch('/api/stats');
                 const stats = await statsResponse.json();
-                
+
                 document.getElementById('totalResponses').textContent = stats.total_responses;
                 document.getElementById('totalLunch').textContent = stats.total_lunch;
                 document.getElementById('totalDinner').textContent = stats.total_dinner;
@@ -152,14 +345,14 @@
                 // Load RSVPs
                 const rsvpResponse = await fetch('/api/rsvp');
                 const rsvps = await rsvpResponse.json();
-                
+
                 const tableBody = document.getElementById('tableBody');
-                
+
                 if (rsvps.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="6" class="no-data">No RSVPs yet</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="7" class="no-data">No RSVPs yet</td></tr>';
                     return;
                 }
-                
+
                 tableBody.innerHTML = rsvps.map((rsvp, index) => `
                     <tr>
                         <td>${index + 1}</td>
@@ -168,12 +361,17 @@
                         <td>${rsvp.lunch_count} 👤</td>
                         <td>${rsvp.dinner_count} 👤</td>
                         <td class="timestamp">${new Date(rsvp.timestamp).toLocaleString()}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteAttendee(${rsvp.id}, '${(rsvp.name || 'Anonymous').replace(/'/g, "\\'")}')">
+                                🗑️ Delete
+                            </button>
+                        </td>
                     </tr>
                 `).join('');
             } catch (error) {
                 console.error('Error loading data:', error);
-                document.getElementById('tableBody').innerHTML = 
-                    '<tr><td colspan="6" class="no-data">Error loading data. Make sure the API server is running.</td></tr>';
+                document.getElementById('tableBody').innerHTML =
+                    '<tr><td colspan="7" class="no-data">Error loading data. Make sure the API server is running.</td></tr>';
             }
         }
 
