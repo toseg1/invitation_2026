@@ -61,7 +61,7 @@ export const EventDetails = () => {
 
   if (showForm) {
     return (
-      <div className="w-full h-full bg-black text-white p-3 sm:p-4 flex flex-col relative overflow-hidden font-mono selection:bg-[#00ff00] selection:text-black">
+      <div className="w-full h-full bg-black text-white p-2 sm:p-4 flex flex-col relative overflow-hidden font-mono selection:bg-[#00ff00] selection:text-black">
         {/* CSS Grid Background */}
         <div
           className="absolute inset-0 opacity-20 pointer-events-none"
@@ -71,9 +71,9 @@ export const EventDetails = () => {
           }}
         />
 
-        <div className="z-10 flex-1 flex flex-col border border-[#333] p-1 relative bg-black/50 backdrop-blur-sm overflow-hidden">
+        <div className="z-10 flex-1 flex flex-col border border-[#333] p-1 relative bg-black/50 backdrop-blur-sm min-h-0">
           {/* Top Bar */}
-          <div className="flex justify-between items-center bg-[#111] p-2 border-b border-[#333]">
+          <div className="flex justify-between items-center bg-[#111] p-2 border-b border-[#333] flex-shrink-0">
               <div className="flex gap-2">
                   <div className="w-3 h-3 rounded-full bg-red-500/50" />
                   <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
@@ -82,9 +82,9 @@ export const EventDetails = () => {
               <span className="text-xs text-gray-500">rsvp@jequittelafrance.com</span>
           </div>
 
-          <div className="p-3 sm:p-4 flex-1 flex flex-col overflow-y-auto">
+          <div className="p-3 sm:p-4 flex-1 overflow-y-auto min-h-0">
               {/* RSVP Form */}
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#00ff00] mb-4 sm:mb-6 text-center">CONFIRMATION</h2>
+              <h2 className="text-xl sm:text-3xl font-bold text-[#00ff00] mb-3 sm:mb-6 text-center">CONFIRMATION</h2>
 
               {/* Error Message */}
               {error && (
@@ -95,9 +95,9 @@ export const EventDetails = () => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-4">
                 <div>
-                  <label className="block text-[#00ff00] mb-1 sm:mb-2 font-semibold text-xs sm:text-sm">NOM</label>
+                  <label className="block text-[#00ff00] mb-1 font-semibold text-xs sm:text-sm">NOM</label>
                   <input
                     type="text"
                     value={formData.name}
@@ -109,7 +109,7 @@ export const EventDetails = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[#00ff00] mb-1 sm:mb-2 font-semibold text-xs sm:text-sm">EMAIL</label>
+                  <label className="block text-[#00ff00] mb-1 font-semibold text-xs sm:text-sm">EMAIL</label>
                   <input
                     type="email"
                     value={formData.email}
@@ -120,7 +120,7 @@ export const EventDetails = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[#00ff00] mb-1 sm:mb-2 font-semibold text-xs sm:text-sm flex items-center gap-2">
+                  <label className="block text-[#00ff00] mb-1 font-semibold text-xs sm:text-sm flex items-center gap-2">
                     <Users className="w-3 h-3 sm:w-4 sm:h-4" />
                     DÉJEUNER (Nombre de personne)
                   </label>
@@ -146,7 +146,7 @@ export const EventDetails = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[#00ff00] mb-1 sm:mb-2 font-semibold text-xs sm:text-sm flex items-center gap-2">
+                  <label className="block text-[#00ff00] mb-1 font-semibold text-xs sm:text-sm flex items-center gap-2">
                     <Users className="w-3 h-3 sm:w-4 sm:h-4" />
                     DÎNER (Nombre de personne)
                   </label>
@@ -171,7 +171,7 @@ export const EventDetails = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-2 sm:gap-3 pt-4 sm:pt-8">
+                <div className="flex gap-2 sm:gap-3 pt-2 sm:pt-8">
                   <button
                     type="button"
                     onClick={() => setShowForm(false)}
