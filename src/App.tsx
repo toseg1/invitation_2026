@@ -18,6 +18,10 @@ function App() {
   const konamiIndexRef = useRef(0);
   const KONAMI_CODE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
 
+  // Touch/Swipe state
+  const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
+
   // Password validation
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,8 +91,11 @@ function App() {
 
       // Navigation shortcuts
       // Left Arrow or Backspace: Go back one layer
-      // Don't intercept if user is typing in an input/textarea
-      const isTyping = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+      // Don't intercept if user is typing in an input/textarea or any editable element
+      const isTyping =
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        (e.target instanceof HTMLElement && e.target.isContentEditable);
 
       if ((e.key === 'ArrowLeft' || e.key === 'Backspace') && removedLayers.length > 0 && !isTyping) {
         e.preventDefault();
@@ -96,19 +103,57 @@ function App() {
       }
 
       // Right Arrow: Go forward one layer
-      if (e.key === 'ArrowRight') {
+      if (e.key === 'ArrowRight' && !isTyping) {
         e.preventDefault();
         goForwardOneLayer();
       }
 
       // R key: Reset all
-      if (e.key === 'r' || e.key === 'R') {
+      if ((e.key === 'r' || e.key === 'R') && !isTyping) {
         setRemovedLayers([]);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [removedLayers, goBackOneLayer, goForwardOneLayer]);
+
+  // Touch/Swipe gestures for mobile navigation
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+
+      const deltaX = touchEndX - touchStartX.current;
+      const deltaY = touchEndY - touchStartY.current;
+
+      // Only trigger if horizontal swipe is more significant than vertical
+      // and swipe distance is at least 50px
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+        if (deltaX > 0) {
+          // Swiped right - go back one layer
+          if (removedLayers.length > 0) {
+            goBackOneLayer();
+          }
+        } else {
+          // Swiped left - go forward one layer (tear current layer)
+          goForwardOneLayer();
+        }
+      }
+    };
+
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
   }, [removedLayers, goBackOneLayer, goForwardOneLayer]);
 
   // Build layers from configuration
@@ -144,7 +189,7 @@ function App() {
         />
 
         {/* Password Form */}
-        <div className="z-10 w-full max-w-md mx-4">
+        <div className="z-10 w-full max-w-md mx-auto px-4 sm:px-6">
           <div className="border border-[#333] bg-black/50 backdrop-blur-sm">
             {/* Top Bar */}
             <div className="flex justify-between items-center bg-[#111] p-2 border-b border-[#333]">
