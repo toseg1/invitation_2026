@@ -6,10 +6,6 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn api:app --bind 0.0.0.0:$PORT
     plan: free
-    disk:
-      name: rsvp-data
-      mountPath: /opt/render/project/src
-      sizeGB: 1
 
   # Frontend Static Site
   - type: web
