@@ -148,7 +148,7 @@ export const SamoaCard = () => {
 
       </div>
 
-      <style jsx>{`
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500&family=Playfair+Display:wght@400;500;600&family=Roboto+Mono:wght@300;400&display=swap');
 
         .samoa-container {

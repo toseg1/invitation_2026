@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Clock, Activity, TrendingUp, Calendar, Users, Send } from 'lucide-react';
 
 export const EventDetails = () => {
@@ -11,6 +11,47 @@ export const EventDetails = () => {
   const [submitted, setSubmitted] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Drag state for mobile
+  const [dragOffset, setDragOffset] = useState(0);
+  const dragStartY = useRef(0);
+  const isDraggingHandle = useRef(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Force re-render when showForm changes (helps with Chrome mobile)
+  useEffect(() => {
+    if (showForm) {
+      // Force layout recalculation
+      window.scrollTo(0, 0);
+    }
+  }, [showForm]);
+
+  // Handle drag on the drag handle (always works)
+  const handleDragHandleTouchStart = (e: React.TouchEvent) => {
+    isDraggingHandle.current = true;
+    dragStartY.current = e.touches[0].clientY;
+  };
+
+  const handleDragHandleTouchMove = (e: React.TouchEvent) => {
+    if (isDraggingHandle.current && dragStartY.current > 0) {
+      const deltaY = e.touches[0].clientY - dragStartY.current;
+      if (deltaY > 0) {
+        setDragOffset(Math.min(deltaY, 150));
+        e.preventDefault(); // Prevent scroll while dragging
+      }
+    }
+  };
+
+  const handleDragHandleTouchEnd = () => {
+    if (isDraggingHandle.current) {
+      if (dragOffset > 80) {
+        setShowForm(false);
+      }
+      setDragOffset(0);
+      dragStartY.current = 0;
+      isDraggingHandle.current = false;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,28 +84,34 @@ export const EventDetails = () => {
     }
   };
 
-  if (submitted) {
-    return (
-      <div className="w-full h-full bg-black text-white p-4 sm:p-6 flex flex-col relative overflow-hidden font-mono selection:bg-[#00ff00] selection:text-black items-center justify-center">
-        <div className="bg-black/95 p-8 rounded-lg border-2 border-[#00ff00]/30 max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-[#00ff00] rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
-            </svg>
-          </div>
-          <h2 className="text-3xl font-bold text-[#00ff00] mb-4">RSVP COMFIRMÉ!</h2>
-          <p className="text-gray-300 mb-6">On se voit en Juillet! 🚀</p>
-        </div>
-      </div>
-    );
-  }
+  return (
+    <div className="w-full h-full bg-black text-white relative overflow-hidden font-mono selection:bg-[#00ff00] selection:text-black">
 
-  if (showForm) {
-    return (
-      <div
-        className="absolute inset-0 bg-black text-white flex flex-col overflow-hidden font-mono selection:bg-[#00ff00] selection:text-black"
-        style={{ padding: '0.5rem' }}
-      >
+      {/* Success Screen */}
+      {submitted && (
+        <div className="absolute inset-0 bg-black flex flex-col items-center justify-center p-4 sm:p-6 z-50">
+          <div className="bg-black/95 p-8 rounded-lg border-2 border-[#00ff00]/30 max-w-md w-full text-center">
+            <div className="w-16 h-16 bg-[#00ff00] rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <h2 className="text-3xl font-bold text-[#00ff00] mb-4">RSVP CONFIRMÉ!</h2>
+            <p className="text-gray-300 mb-6">On se voit en Juillet! 🚀</p>
+          </div>
+        </div>
+      )}
+
+      {/* Form View */}
+      {showForm && !submitted && (
+        <div
+          className="absolute inset-0 bg-black text-white flex flex-col overflow-hidden z-40 transition-transform duration-200"
+          style={{
+            padding: '0.5rem',
+            transform: `translateY(${dragOffset}px)`
+          }}
+        >
+
         {/* CSS Grid Background */}
         <div
           className="absolute inset-0 opacity-20 pointer-events-none"
@@ -86,6 +133,7 @@ export const EventDetails = () => {
           </div>
 
           <div
+            ref={scrollContainerRef}
             className="p-3 sm:p-4 flex-1 overflow-y-auto"
             style={{
               WebkitOverflowScrolling: 'touch',
@@ -201,11 +249,11 @@ export const EventDetails = () => {
               </form>
           </div>
         </div>
-      </div>
-    );
-  }
+        </div>
+      )}
 
-  return (
+      {/* Main Event Details View */}
+      {!showForm && !submitted && (
     <div className="w-full h-full bg-black text-white p-4 sm:p-6 flex flex-col relative overflow-hidden font-mono selection:bg-[#00ff00] selection:text-black">
       {/* CSS Grid Background */}
       <div
@@ -233,52 +281,53 @@ export const EventDetails = () => {
             <span className="text-xs text-gray-500">root@event:~/genesis_block</span>
         </div>
 
-        <div className="p-3 sm:p-4 flex-1 flex flex-col overflow-y-auto">
+        <div className="p-2 sm:p-4 flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="flex flex-col min-h-full">
             {/* Header */}
-            <div className="mb-2 sm:mb-8 relative">
+            <div className="mb-2 sm:mb-6 relative flex-shrink-0 max-[374px]:mb-1">
                 <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-[#00ff00] to-transparent" />
-                <h4 className="text-[#00ff00] font-bold text-xs sm:text-sm mb-0.5 sm:mb-1 tracking-wider">README.md</h4>
-                <h1 className="text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-[0.85] tracking-tighter mix-blend-exclusion">
+                <h4 className="text-[#00ff00] font-bold text-xs sm:text-sm mb-0.5 tracking-wider max-[374px]:text-[9px]">README.md</h4>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-[0.85] tracking-tighter mix-blend-exclusion max-[374px]:text-[28px]">
                     JE<br/>QUITTE<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ff00] to-emerald-600">LA FRANCE</span>
                 </h1>
             </div>
 
             {/* Grid Info */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-2 sm:mb-8">
-                <div className="border border-[#333] p-2 sm:p-3 hover:border-[#00ff00] transition-colors group">
-                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mb-1 sm:mb-2 group-hover:text-[#00ff00]" />
-                    <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase">Timestamp</p>
-                    <p className="font-bold text-xs sm:text-base">4 Juillet 2026</p>
-                    <p className="text-[9px] sm:text-[10px] text-[#00ff00]">12:00 (midi)</p>
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-2 sm:mb-6 flex-shrink-0 max-[374px]:gap-1 max-[374px]:mb-1">
+                <div className="border border-[#333] p-2 sm:p-3 hover:border-[#00ff00] transition-colors group max-[374px]:p-1">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mb-1 sm:mb-2 group-hover:text-[#00ff00] max-[374px]:w-3 max-[374px]:h-3 max-[374px]:mb-0.5" />
+                    <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase max-[374px]:text-[7px]">Timestamp</p>
+                    <p className="font-bold text-xs sm:text-base max-[374px]:text-[10px]">4 Juillet 2026</p>
+                    <p className="text-[9px] sm:text-[10px] text-[#00ff00] max-[374px]:text-[7px]">12:00 (midi)</p>
                 </div>
-                <div className="border border-[#333] p-2 sm:p-3 hover:border-[#00ff00] transition-colors group">
-                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mb-1 sm:mb-2 group-hover:text-[#00ff00]" />
-                    <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase">Node Location</p>
-                    <p className="font-bold text-xs sm:text-base">10 rue d'Echevanne</p>
-                    <p className="text-[9px] sm:text-[10px] text-gray-500">70100 Velesmes</p>
+                <div className="border border-[#333] p-2 sm:p-3 hover:border-[#00ff00] transition-colors group max-[374px]:p-1">
+                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mb-1 sm:mb-2 group-hover:text-[#00ff00] max-[374px]:w-3 max-[374px]:h-3 max-[374px]:mb-0.5" />
+                    <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase max-[374px]:text-[7px]">Node Location</p>
+                    <p className="font-bold text-xs sm:text-base max-[374px]:text-[10px]">10 rue d'Echevanne</p>
+                    <p className="text-[9px] sm:text-[10px] text-gray-500 max-[374px]:text-[7px]">70100 Velesmes</p>
                 </div>
-                <div className="border border-[#333] p-2 sm:p-3 hover:border-[#00ff00] transition-colors group">
-                    <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mb-1 sm:mb-2 group-hover:text-[#00ff00]" />
-                    <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase">Vibe Check</p>
-                    <p className="font-bold text-xs sm:text-base">Zone 5 only</p>
-                    <p className="text-[9px] sm:text-[10px] text-gray-500">FC Max</p>
+                <div className="border border-[#333] p-2 sm:p-3 hover:border-[#00ff00] transition-colors group max-[374px]:p-1">
+                    <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mb-1 sm:mb-2 group-hover:text-[#00ff00] max-[374px]:w-3 max-[374px]:h-3 max-[374px]:mb-0.5" />
+                    <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase max-[374px]:text-[7px]">Vibe Check</p>
+                    <p className="font-bold text-xs sm:text-base max-[374px]:text-[10px]">Zone 5 only</p>
+                    <p className="text-[9px] sm:text-[10px] text-gray-500 max-[374px]:text-[7px]">FC Max</p>
                 </div>
-                <div className="border border-[#333] p-2 sm:p-3 hover:border-[#00ff00] transition-colors group">
-                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mb-1 sm:mb-2 group-hover:text-[#00ff00]" />
-                    <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase">Entry</p>
-                    <p className="font-bold text-xs sm:text-base">Proof of Party</p>
-                    <p className="text-[9px] sm:text-[10px] text-gray-500">Gas Only</p>
+                <div className="border border-[#333] p-2 sm:p-3 hover:border-[#00ff00] transition-colors group max-[374px]:p-1">
+                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mb-1 sm:mb-2 group-hover:text-[#00ff00] max-[374px]:w-3 max-[374px]:h-3 max-[374px]:mb-0.5" />
+                    <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase max-[374px]:text-[7px]">Entry</p>
+                    <p className="font-bold text-xs sm:text-base max-[374px]:text-[10px]">Proof of Party</p>
+                    <p className="text-[9px] sm:text-[10px] text-gray-500 max-[374px]:text-[7px]">Gas Only</p>
                 </div>
             </div>
 
             {/* Info Box */}
-            <div className="border border-[#333] p-2 sm:p-4 mb-2 sm:mb-6 hover:border-[#00ff00]/50 transition-colors bg-[#0a0a0a]/50">
-                <ul className="space-y-1.5 sm:space-y-2 text-[10px] sm:text-sm text-gray-300">
-                    <li className="flex items-start gap-1.5 sm:gap-2">
+            <div className="border border-[#333] p-2 sm:p-4 mb-2 sm:mb-4 hover:border-[#00ff00]/50 transition-colors bg-[#0a0a0a]/50 flex-shrink-0 max-[374px]:p-1 max-[374px]:mb-1">
+                <ul className="space-y-1.5 sm:space-y-2 text-[10px] sm:text-sm text-gray-300 max-[374px]:space-y-0.5 max-[374px]:text-[8px]">
+                    <li className="flex items-start gap-1.5 sm:gap-2 max-[374px]:gap-0.5">
                         <span className="text-[#00ff00] mt-0.5">▸</span>
                         <span>Possibilité de <span className="text-[#00ff00]">logement / camping</span> sur place</span>
                     </li>
-                    <li className="flex items-start gap-1.5 sm:gap-2">
+                    <li className="flex items-start gap-1.5 sm:gap-2 max-[374px]:gap-0.5">
                         <span className="text-[#00ff00] mt-0.5">▸</span>
                         <span>Plus d'infos, contactez moi au <span className="text-[#00ff00] font-bold">07 70 70 60 27</span> / <span className="text-[#00ff00] font-bold">theo.seguin@free.fr</span></span>
                     </li>
@@ -289,12 +338,16 @@ export const EventDetails = () => {
             {/* Footer Button */}
             <button
               onClick={() => setShowForm(true)}
-              className="w-full mt-2 sm:mt-4 bg-[#00ff00] text-black font-black py-2.5 sm:py-4 text-sm sm:text-xl uppercase hover:bg-[#00cc00] hover:scale-[1.02] transition-all border-b-4 border-[#009900] active:border-0 active:translate-y-[4px] flex-shrink-0"
+              className="w-full mt-2 sm:mt-4 mb-4 bg-[#00ff00] text-black font-black py-3 text-base sm:text-xl uppercase hover:bg-[#00cc00] transition-all border-b-4 border-[#009900] active:border-0 active:translate-y-[4px] flex-shrink-0 max-[374px]:mt-1 max-[374px]:py-2 max-[374px]:text-sm max-[374px]:border-b-2"
             >
-                COMFIRME TA VENUE
+                CONFIRME TA VENUE
             </button>
+          </div>
         </div>
       </div>
+    </div>
+      )}
+
     </div>
   );
 };
