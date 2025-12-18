@@ -4,13 +4,13 @@ import { Heart, MapPin, Camera,PartyPopper } from 'lucide-react'
 export const AboutMeCard = () => {
   // These image URLs can be easily replaced from backend
   const moodBoardImages = {
-    mainPhoto: '/src/components/img/mariage-1.jpeg',
-    photo1: '/src/components/img/victor-alice.jpeg',
-    photo2: '/src/components/img/tri.jpeg',
-    photo3: '/src/components/img/harry-potter.jpeg',
-    photo4: '/src/components/img/new-york.jpeg',
-    photo5: '/src/components/img/IMG_7055.jpeg',
-    photo6: '/src/components/img/IMG_1006.jpeg',
+    mainPhoto: '/images/moodboard/mariage-1.jpeg',
+    photo1: '/images/moodboard/victor-alice.jpeg',
+    photo2: '/images/moodboard/tri.jpeg',
+    photo3: '/images/moodboard/harry-potter.jpeg',
+    photo4: '/images/moodboard/new-york.jpeg',
+    photo5: '/images/moodboard/IMG_7055.jpeg',
+    photo6: '/images/moodboard/IMG_1006.jpeg',
   };
 
   return (
