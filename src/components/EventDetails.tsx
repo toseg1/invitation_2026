@@ -275,14 +275,6 @@ export const EventDetails = () => {
                 </ul>
             </div>
 
-            {/* Terminal Snippet */}
-            <div className="bg-[#0a0a0a] p-2 sm:p-3 rounded border border-[#333] font-mono text-[10px] sm:text-xs text-gray-300 mb-auto">
-                <span className="text-[#00ff00]">$</span> npm install vibes<br/>
-                <span className="text-gray-500">Installing...</span><br/>
-                <span className="text-cyan-400">added 420 packages in 0.69s</span><br/>
-                <span className="text-[#00ff00]">$</span> ./start_party.sh --force
-            </div>
-
             {/* Footer Button */}
             <button
               onClick={() => setShowForm(true)}
