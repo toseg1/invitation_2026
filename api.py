@@ -1,32 +1,35 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import sqlite3
+import psycopg2
+import psycopg2.extras
 import os
 from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
 
-DATABASE = 'rsvp.db'
+# Use PostgreSQL connection from environment variable
+DATABASE_URL = os.environ.get('DATABASE_URL')
 
 def get_db():
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
+    conn = psycopg2.connect(DATABASE_URL)
     return conn
 
 def init_db():
     conn = get_db()
-    conn.execute('''
+    cursor = conn.cursor()
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS rsvp (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             name TEXT,
             email TEXT,
             lunch_count INTEGER DEFAULT 0,
             dinner_count INTEGER DEFAULT 0,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     conn.commit()
+    cursor.close()
     conn.close()
 
 @app.route('/api/rsvp', methods=['POST'])
@@ -66,11 +69,12 @@ def submit_rsvp():
 @app.route('/api/rsvp', methods=['GET'])
 def get_rsvps():
     conn = get_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute('SELECT * FROM rsvp ORDER BY timestamp DESC')
     rows = cursor.fetchall()
+    cursor.close()
     conn.close()
-    
+
     rsvps = []
     for row in rows:
         rsvps.append({
@@ -79,9 +83,9 @@ def get_rsvps():
             'email': row['email'],
             'lunch_count': row['lunch_count'],
             'dinner_count': row['dinner_count'],
-            'timestamp': row['timestamp']
+            'timestamp': str(row['timestamp'])
         })
-    
+
     return jsonify(rsvps)
 
 @app.route('/api/rsvp/<int:rsvp_id>', methods=['DELETE'])
@@ -90,16 +94,18 @@ def delete_rsvp(rsvp_id):
     cursor = conn.cursor()
 
     # Check if the RSVP exists
-    cursor.execute('SELECT * FROM rsvp WHERE id = ?', (rsvp_id,))
+    cursor.execute('SELECT * FROM rsvp WHERE id = %s', (rsvp_id,))
     rsvp = cursor.fetchone()
 
     if not rsvp:
+        cursor.close()
         conn.close()
         return jsonify({'success': False, 'message': 'RSVP not found'}), 404
 
     # Delete the RSVP
-    cursor.execute('DELETE FROM rsvp WHERE id = ?', (rsvp_id,))
+    cursor.execute('DELETE FROM rsvp WHERE id = %s', (rsvp_id,))
     conn.commit()
+    cursor.close()
     conn.close()
 
     return jsonify({'success': True, 'message': 'RSVP deleted successfully'})
@@ -107,15 +113,16 @@ def delete_rsvp(rsvp_id):
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
     conn = get_db()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute('SELECT SUM(lunch_count) as total_lunch, SUM(dinner_count) as total_dinner, COUNT(*) as total_responses FROM rsvp')
     row = cursor.fetchone()
+    cursor.close()
     conn.close()
 
     return jsonify({
-        'total_lunch': row['total_lunch'] or 0,
-        'total_dinner': row['total_dinner'] or 0,
-        'total_responses': row['total_responses'] or 0
+        'total_lunch': int(row['total_lunch']) if row['total_lunch'] else 0,
+        'total_dinner': int(row['total_dinner']) if row['total_dinner'] else 0,
+        'total_responses': int(row['total_responses']) if row['total_responses'] else 0
     })
 
 @app.route('/')
