@@ -46,7 +46,7 @@ export const EventDetails = () => {
   if (submitted) {
     return (
       <div className="w-full h-full bg-black text-white p-4 sm:p-6 flex flex-col relative overflow-hidden font-mono selection:bg-[#00ff00] selection:text-black items-center justify-center">
-        <div className="bg-black/60 backdrop-blur-lg p-8 rounded-lg border-2 border-[#00ff00]/30 max-w-md w-full text-center">
+        <div className="bg-black/95 p-8 rounded-lg border-2 border-[#00ff00]/30 max-w-md w-full text-center">
           <div className="w-16 h-16 bg-[#00ff00] rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-10 h-10 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path>
@@ -71,7 +71,7 @@ export const EventDetails = () => {
           }}
         />
 
-        <div className="z-10 flex-1 flex flex-col border border-[#333] p-1 relative bg-black/50 backdrop-blur-sm min-h-0">
+        <div className="z-10 flex-1 flex flex-col border border-[#333] p-1 relative bg-black/95">
           {/* Top Bar */}
           <div className="flex justify-between items-center bg-[#111] p-2 border-b border-[#333] flex-shrink-0">
               <div className="flex gap-2">
@@ -82,7 +82,7 @@ export const EventDetails = () => {
               <span className="text-xs text-gray-500">rsvp@jequittelafrance.com</span>
           </div>
 
-          <div className="p-3 sm:p-4 flex-1 overflow-y-auto min-h-0">
+          <div className="p-3 sm:p-4 flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
               {/* RSVP Form */}
               <h2 className="text-xl sm:text-3xl font-bold text-[#00ff00] mb-3 sm:mb-6 text-center">CONFIRMATION</h2>
 
@@ -210,10 +210,10 @@ export const EventDetails = () => {
         01001011<br/>11010101<br/>00111001<br/>10101010<br/>01010111
       </div>
 
-      <div className="z-10 flex-1 flex flex-col border border-[#333] p-1 relative bg-black/50 backdrop-blur-sm">
+      <div className="z-10 flex-1 flex flex-col border border-[#333] p-1 relative bg-black/95">
 
         {/* Top Bar */}
-        <div className="flex justify-between items-center bg-[#111] p-2 border-b border-[#333]">
+        <div className="flex justify-between items-center bg-[#111] p-2 border-b border-[#333] flex-shrink-0">
             <div className="flex gap-2">
                 <div className="w-3 h-3 rounded-full bg-red-500/50" />
                 <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
