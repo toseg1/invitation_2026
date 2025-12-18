@@ -10,6 +10,7 @@ export const EventDetails = () => {
   });
   const [submitted, setSubmitted] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,6 +18,7 @@ export const EventDetails = () => {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5002';
 
     try {
+      setError(null);
       const response = await fetch(`${apiUrl}/api/rsvp`, {
         method: 'POST',
         headers: {
@@ -32,10 +34,12 @@ export const EventDetails = () => {
 
       if (response.ok) {
         setSubmitted(true);
+      } else {
+        setError('Erreur lors de l\'envoi. Veuillez réessayer.');
       }
     } catch (error) {
       console.error('Error submitting RSVP:', error);
-      alert('Error submitting RSVP. Please try again later.');
+      setError('Erreur de connexion. Veuillez réessayer plus tard.');
     }
   };
 
@@ -80,7 +84,16 @@ export const EventDetails = () => {
 
           <div className="p-3 sm:p-4 flex-1 flex flex-col overflow-y-auto">
               {/* RSVP Form */}
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#00ff00] mb-4 sm:mb-6 text-center">CONFIRM ATTENDANCE</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#00ff00] mb-4 sm:mb-6 text-center">CONFIRMATION</h2>
+
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 rounded">
+                  <p className="text-red-500 text-sm font-mono font-semibold text-center">
+                    ⚠️ ERROR: {error}
+                  </p>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
                 <div>
