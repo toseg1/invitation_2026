@@ -1,33 +1,56 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import psycopg
-from psycopg.rows import dict_row
 import os
 from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
 
-# Use PostgreSQL connection from environment variable
+# Use PostgreSQL in production, SQLite locally
 DATABASE_URL = os.environ.get('DATABASE_URL')
+USE_POSTGRES = DATABASE_URL is not None
+
+if USE_POSTGRES:
+    import psycopg
+    from psycopg.rows import dict_row
+else:
+    import sqlite3
 
 def get_db():
-    conn = psycopg.connect(DATABASE_URL)
+    if USE_POSTGRES:
+        conn = psycopg.connect(DATABASE_URL)
+    else:
+        conn = sqlite3.connect('rsvp.db')
+        conn.row_factory = sqlite3.Row
     return conn
 
 def init_db():
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS rsvp (
-            id SERIAL PRIMARY KEY,
-            name TEXT,
-            email TEXT,
-            lunch_count INTEGER DEFAULT 0,
-            dinner_count INTEGER DEFAULT 0,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
+
+    if USE_POSTGRES:
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS rsvp (
+                id SERIAL PRIMARY KEY,
+                name TEXT,
+                email TEXT,
+                lunch_count INTEGER DEFAULT 0,
+                dinner_count INTEGER DEFAULT 0,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+    else:
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS rsvp (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT,
+                email TEXT,
+                lunch_count INTEGER DEFAULT 0,
+                dinner_count INTEGER DEFAULT 0,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
     conn.commit()
     cursor.close()
     conn.close()
@@ -56,10 +79,16 @@ def submit_rsvp():
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute('''
-        INSERT INTO rsvp (name, email, lunch_count, dinner_count)
-        VALUES (?, ?, ?, ?)
-    ''', (name, email, lunch_count, dinner_count))
+    if USE_POSTGRES:
+        cursor.execute('''
+            INSERT INTO rsvp (name, email, lunch_count, dinner_count)
+            VALUES (%s, %s, %s, %s)
+        ''', (name, email, lunch_count, dinner_count))
+    else:
+        cursor.execute('''
+            INSERT INTO rsvp (name, email, lunch_count, dinner_count)
+            VALUES (?, ?, ?, ?)
+        ''', (name, email, lunch_count, dinner_count))
 
     conn.commit()
     conn.close()
@@ -69,7 +98,12 @@ def submit_rsvp():
 @app.route('/api/rsvp', methods=['GET'])
 def get_rsvps():
     conn = get_db()
-    cursor = conn.cursor(row_factory=dict_row)
+
+    if USE_POSTGRES:
+        cursor = conn.cursor(row_factory=dict_row)
+    else:
+        cursor = conn.cursor()
+
     cursor.execute('SELECT * FROM rsvp ORDER BY timestamp DESC')
     rows = cursor.fetchall()
     cursor.close()
@@ -93,8 +127,10 @@ def delete_rsvp(rsvp_id):
     conn = get_db()
     cursor = conn.cursor()
 
+    placeholder = '%s' if USE_POSTGRES else '?'
+
     # Check if the RSVP exists
-    cursor.execute('SELECT * FROM rsvp WHERE id = %s', (rsvp_id,))
+    cursor.execute(f'SELECT * FROM rsvp WHERE id = {placeholder}', (rsvp_id,))
     rsvp = cursor.fetchone()
 
     if not rsvp:
@@ -103,7 +139,7 @@ def delete_rsvp(rsvp_id):
         return jsonify({'success': False, 'message': 'RSVP not found'}), 404
 
     # Delete the RSVP
-    cursor.execute('DELETE FROM rsvp WHERE id = %s', (rsvp_id,))
+    cursor.execute(f'DELETE FROM rsvp WHERE id = {placeholder}', (rsvp_id,))
     conn.commit()
     cursor.close()
     conn.close()
@@ -113,7 +149,12 @@ def delete_rsvp(rsvp_id):
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
     conn = get_db()
-    cursor = conn.cursor(row_factory=dict_row)
+
+    if USE_POSTGRES:
+        cursor = conn.cursor(row_factory=dict_row)
+    else:
+        cursor = conn.cursor()
+
     cursor.execute('SELECT SUM(lunch_count) as total_lunch, SUM(dinner_count) as total_dinner, COUNT(*) as total_responses FROM rsvp')
     row = cursor.fetchone()
     cursor.close()
