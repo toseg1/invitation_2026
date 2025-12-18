@@ -224,16 +224,16 @@ export const EventDetails = () => {
 
         <div className="p-3 sm:p-4 flex-1 flex flex-col overflow-y-auto">
             {/* Header */}
-            <div className="mb-3 sm:mb-8 relative">
+            <div className="mb-2 sm:mb-8 relative">
                 <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-[#00ff00] to-transparent" />
                 <h4 className="text-[#00ff00] font-bold text-xs sm:text-sm mb-0.5 sm:mb-1 tracking-wider">README.md</h4>
-                <h1 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase leading-[0.8] tracking-tighter mix-blend-exclusion">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-black uppercase leading-[0.85] tracking-tighter mix-blend-exclusion">
                     JE<br/>QUITTE<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ff00] to-emerald-600">LA FRANCE</span>
                 </h1>
             </div>
 
             {/* Grid Info */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-8">
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-2 sm:mb-8">
                 <div className="border border-[#333] p-2 sm:p-3 hover:border-[#00ff00] transition-colors group">
                     <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mb-1 sm:mb-2 group-hover:text-[#00ff00]" />
                     <p className="text-[9px] sm:text-[10px] text-gray-400 uppercase">Timestamp</p>
@@ -261,7 +261,7 @@ export const EventDetails = () => {
             </div>
 
             {/* Info Box */}
-            <div className="border border-[#333] p-2 sm:p-4 mb-3 sm:mb-6 hover:border-[#00ff00]/50 transition-colors bg-[#0a0a0a]/50">
+            <div className="border border-[#333] p-2 sm:p-4 mb-2 sm:mb-6 hover:border-[#00ff00]/50 transition-colors bg-[#0a0a0a]/50">
                 <ul className="space-y-1.5 sm:space-y-2 text-[10px] sm:text-sm text-gray-300">
                     <li className="flex items-start gap-1.5 sm:gap-2">
                         <span className="text-[#00ff00] mt-0.5">▸</span>
