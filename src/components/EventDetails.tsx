@@ -61,7 +61,10 @@ export const EventDetails = () => {
 
   if (showForm) {
     return (
-      <div className="w-full h-full bg-black text-white p-2 sm:p-4 flex flex-col relative overflow-hidden font-mono selection:bg-[#00ff00] selection:text-black">
+      <div
+        className="absolute inset-0 bg-black text-white flex flex-col overflow-hidden font-mono selection:bg-[#00ff00] selection:text-black"
+        style={{ padding: '0.5rem' }}
+      >
         {/* CSS Grid Background */}
         <div
           className="absolute inset-0 opacity-20 pointer-events-none"
@@ -71,7 +74,7 @@ export const EventDetails = () => {
           }}
         />
 
-        <div className="z-10 flex-1 flex flex-col border border-[#333] p-1 relative bg-black/95">
+        <div className="z-10 flex-1 flex flex-col border border-[#333] p-1 relative bg-black/95 overflow-hidden">
           {/* Top Bar */}
           <div className="flex justify-between items-center bg-[#111] p-2 border-b border-[#333] flex-shrink-0">
               <div className="flex gap-2">
@@ -82,7 +85,15 @@ export const EventDetails = () => {
               <span className="text-xs text-gray-500">rsvp@jequittelafrance.com</span>
           </div>
 
-          <div className="p-3 sm:p-4 flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div
+            className="p-3 sm:p-4 flex-1 overflow-y-auto"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              overflowY: 'auto',
+              flex: '1 1 0%',
+              minHeight: 0
+            }}
+          >
               {/* RSVP Form */}
               <h2 className="text-xl sm:text-3xl font-bold text-[#00ff00] mb-3 sm:mb-6 text-center">CONFIRMATION</h2>
 
