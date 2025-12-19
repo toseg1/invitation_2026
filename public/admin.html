@@ -106,10 +106,75 @@
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s;
+            margin-right: 5px;
         }
         .delete-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+        }
+        .edit-btn {
+            background: linear-gradient(90deg, #00d9ff, #a855f7);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.9em;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 5px;
+        }
+        .edit-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+        }
+        .save-btn {
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.9em;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 5px;
+        }
+        .save-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+        .cancel-btn {
+            background: linear-gradient(90deg, #6b7280, #4b5563);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 0.9em;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .cancel-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(107, 114, 128, 0.5);
+        }
+        .edit-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.5);
+            border-radius: 3px;
+            padding: 4px 8px;
+            color: white;
+            width: 100%;
+            font-size: 0.9em;
+        }
+        .edit-input:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 5px rgba(0, 217, 255, 0.3);
+        }
+        tr.editing {
+            background: rgba(0, 217, 255, 0.1);
         }
         .add-form {
             background: rgba(0, 0, 0, 0.5);
@@ -160,12 +225,31 @@
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
-            width: 100%;
             transition: all 0.3s;
         }
         .add-btn:hover {
             transform: scale(1.02);
             box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+        }
+        .clear-btn {
+            background: linear-gradient(90deg, #6b7280, #4b5563);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .clear-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(107, 114, 128, 0.5);
+        }
+        .form-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
         .message {
             padding: 12px;
@@ -216,7 +300,10 @@
                         <input type="number" id="newDinner" min="0" value="0" placeholder="0">
                     </div>
                 </div>
-                <button type="submit" class="add-btn">Add Attendee</button>
+                <div class="form-buttons">
+                    <button type="submit" class="add-btn">➕ Add Attendee</button>
+                    <button type="button" class="clear-btn" onclick="clearForm()">✖ Clear Form</button>
+                </div>
             </form>
         </div>
 
@@ -258,6 +345,8 @@
     </div>
 
     <script>
+        let editingId = null;
+
         function showMessage(message, isSuccess) {
             const container = document.getElementById('messageContainer');
             const messageDiv = document.createElement('div');
@@ -269,6 +358,11 @@
             setTimeout(() => {
                 messageDiv.remove();
             }, 5000);
+        }
+
+        function clearForm() {
+            document.getElementById('addAttendeeForm').reset();
+            showMessage('✓ Form cleared!', true);
         }
 
         async function addAttendee(event) {
@@ -305,6 +399,69 @@
             } catch (error) {
                 console.error('Error adding attendee:', error);
                 showMessage('✗ Failed to add attendee. Please try again.', false);
+            }
+        }
+
+        function editAttendee(id, name, email, lunchCount, dinnerCount) {
+            if (editingId !== null) {
+                cancelEdit();
+            }
+
+            editingId = id;
+            const row = document.querySelector(`tr[data-id="${id}"]`);
+            row.classList.add('editing');
+
+            row.innerHTML = `
+                <td>${row.querySelector('td:first-child').textContent}</td>
+                <td><input type="text" class="edit-input" id="edit-name-${id}" value="${name || ''}"></td>
+                <td><input type="email" class="edit-input" id="edit-email-${id}" value="${email || ''}"></td>
+                <td><input type="number" class="edit-input" id="edit-lunch-${id}" value="${lunchCount}" min="0" style="width: 80px;"></td>
+                <td><input type="number" class="edit-input" id="edit-dinner-${id}" value="${dinnerCount}" min="0" style="width: 80px;"></td>
+                <td class="timestamp">${row.querySelector('td:nth-child(6)').textContent}</td>
+                <td>
+                    <button class="save-btn" onclick="saveEdit(${id})">💾 Save</button>
+                    <button class="cancel-btn" onclick="cancelEdit()">✖ Cancel</button>
+                </td>
+            `;
+        }
+
+        function cancelEdit() {
+            editingId = null;
+            loadData();
+        }
+
+        async function saveEdit(id) {
+            const name = document.getElementById(`edit-name-${id}`).value.trim();
+            const email = document.getElementById(`edit-email-${id}`).value.trim();
+            const lunchCount = parseInt(document.getElementById(`edit-lunch-${id}`).value) || 0;
+            const dinnerCount = parseInt(document.getElementById(`edit-dinner-${id}`).value) || 0;
+
+            try {
+                const response = await fetch(`/api/rsvp/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        lunch_count: lunchCount,
+                        dinner_count: dinnerCount
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('✓ Attendee updated successfully!', true);
+                    editingId = null;
+                    loadData();
+                } else {
+                    showMessage('✗ Error: ' + result.message, false);
+                }
+            } catch (error) {
+                console.error('Error updating attendee:', error);
+                showMessage('✗ Failed to update attendee. Please try again.', false);
             }
         }
 
@@ -354,7 +511,7 @@
                 }
 
                 tableBody.innerHTML = rsvps.map((rsvp, index) => `
-                    <tr>
+                    <tr data-id="${rsvp.id}">
                         <td>${index + 1}</td>
                         <td>${rsvp.name || 'Anonymous'}</td>
                         <td>${rsvp.email || '-'}</td>
@@ -362,6 +519,9 @@
                         <td>${rsvp.dinner_count} 👤</td>
                         <td class="timestamp">${new Date(rsvp.timestamp).toLocaleString()}</td>
                         <td>
+                            <button class="edit-btn" onclick="editAttendee(${rsvp.id}, '${(rsvp.name || '').replace(/'/g, "\\'")}', '${(rsvp.email || '').replace(/'/g, "\\'")}', ${rsvp.lunch_count}, ${rsvp.dinner_count})">
+                                ✏️ Edit
+                            </button>
                             <button class="delete-btn" onclick="deleteAttendee(${rsvp.id}, '${(rsvp.name || 'Anonymous').replace(/'/g, "\\'")}')">
                                 🗑️ Delete
                             </button>

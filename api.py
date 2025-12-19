@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app, resources={
     r"/api/*": {
         "origins": "*",
-        "methods": ["GET", "POST", "DELETE", "OPTIONS"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type"],
         "supports_credentials": False
     }
@@ -235,6 +235,61 @@ def get_rsvps():
         })
 
     return jsonify(rsvps)
+
+@app.route('/api/rsvp/<int:rsvp_id>', methods=['PUT'])
+def update_rsvp(rsvp_id):
+    data = request.json
+
+    # Validate input
+    if not data:
+        return jsonify({'success': False, 'message': 'No data provided'}), 400
+
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip()
+
+    # Validate lunch and dinner counts
+    try:
+        lunch_count = int(data.get('lunch_count', 0))
+        dinner_count = int(data.get('dinner_count', 0))
+
+        if lunch_count < 0 or dinner_count < 0:
+            return jsonify({'success': False, 'message': 'Counts cannot be negative'}), 400
+    except (ValueError, TypeError):
+        return jsonify({'success': False, 'message': 'Invalid count values'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    placeholder = '%s' if USE_POSTGRES else '?'
+
+    # Check if the RSVP exists
+    cursor.execute(f'SELECT * FROM rsvp WHERE id = {placeholder}', (rsvp_id,))
+    rsvp = cursor.fetchone()
+
+    if not rsvp:
+        cursor.close()
+        conn.close()
+        return jsonify({'success': False, 'message': 'RSVP not found'}), 404
+
+    # Update the RSVP
+    if USE_POSTGRES:
+        cursor.execute('''
+            UPDATE rsvp
+            SET name = %s, email = %s, lunch_count = %s, dinner_count = %s
+            WHERE id = %s
+        ''', (name, email, lunch_count, dinner_count, rsvp_id))
+    else:
+        cursor.execute('''
+            UPDATE rsvp
+            SET name = ?, email = ?, lunch_count = ?, dinner_count = ?
+            WHERE id = ?
+        ''', (name, email, lunch_count, dinner_count, rsvp_id))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({'success': True, 'message': 'RSVP updated successfully'})
 
 @app.route('/api/rsvp/<int:rsvp_id>', methods=['DELETE'])
 def delete_rsvp(rsvp_id):
