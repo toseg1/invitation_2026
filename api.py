@@ -6,6 +6,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.utils import formatdate
+import threading
 
 app = Flask(__name__)
 CORS(app, resources={
@@ -204,8 +205,12 @@ def submit_rsvp():
     conn.commit()
     conn.close()
 
-    # Send confirmation email
-    send_confirmation_email(name, email, lunch_count, dinner_count)
+    # Send confirmation email in background thread to avoid blocking the response
+    threading.Thread(
+        target=send_confirmation_email,
+        args=(name, email, lunch_count, dinner_count),
+        daemon=True
+    ).start()
 
     return jsonify({'success': True, 'message': 'RSVP submitted successfully'})
 
