@@ -34,7 +34,8 @@ export const invitationConfig: InvitationConfig = {
    * Change this array to reorder your cards!
    */
   layers: [
-    'event-details',    // Bottom layer (revealed at the end)
+    'rsvp-form',        // Bottom layer - RSVP form (revealed at the end)
+    'event-info',       // Event details and info
     'dj-announcement',
     'about-me',         // Personal photo mood board
     'samoa-adventure',  // Théo's epic journey to Samoa

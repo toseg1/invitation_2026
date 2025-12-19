@@ -369,10 +369,10 @@ function App() {
           return (
             <div
               key={definition.id}
-              className="absolute inset-0 shadow-[0_0_100px_rgba(0,255,0,0.1)] bg-black border border-[#333]"
+              className="absolute inset-0 shadow-[0_0_100px_rgba(0,255,0,0.1)] bg-black"
               style={{ zIndex }}
             >
-              <CardComponent />
+              <CardComponent onContinue={() => handleTear(index)} />
             </div>
           );
         })}

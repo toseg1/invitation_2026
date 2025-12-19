@@ -4,7 +4,8 @@ import { CryptoStonksCard } from '../components/cards/CryptoStonksCard';
 import { DJAnnouncementCard } from '../components/cards/DJAnnouncementCard';
 import { SamoaCard } from '../components/cards/SamoaCard';
 import { AboutMeCard } from '../components/cards/AboutMe';
-import { EventDetails } from '../components/EventDetails';
+import { EventInfoCard } from '../components/cards/EventInfoCard';
+import { RSVPFormCard } from '../components/cards/RSVPFormCard';
 
 /**
  * Card Registry
@@ -81,12 +82,26 @@ export const CARD_REGISTRY: Record<string, CardDefinition> = {
     },
   },
 
-  'event-details': {
-    id: 'event-details',
-    name: 'Event Details',
-    description: 'Final reveal with RSVP form',
-    component: EventDetails,
+  'event-info': {
+    id: 'event-info',
+    name: 'Event Info',
+    description: 'Event details and location information',
+    component: EventInfoCard,
     isTearable: false,
+    defaultStyling: {
+      rotation: 'rotate-1',
+    },
+  },
+
+  'rsvp-form': {
+    id: 'rsvp-form',
+    name: 'RSVP Form',
+    description: 'Confirmation form for the event',
+    component: RSVPFormCard,
+    isTearable: false,
+    defaultStyling: {
+      rotation: '-rotate-1',
+    },
   },
 
   // Add more cards here as you create them!

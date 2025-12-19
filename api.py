@@ -2,9 +2,20 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import os
 from datetime import datetime
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.utils import formatdate
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={
+    r"/api/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type"],
+        "supports_credentials": False
+    }
+})
 
 # Use PostgreSQL in production, SQLite locally
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -55,6 +66,106 @@ def init_db():
     cursor.close()
     conn.close()
 
+def send_confirmation_email(name, email, lunch_count, dinner_count):
+    """Send confirmation email to the RSVP submitter"""
+
+    # Email configuration from environment variables
+    smtp_server = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
+    smtp_port = int(os.environ.get('SMTP_PORT', '587'))
+    sender_email = os.environ.get('SENDER_EMAIL')
+    sender_password = os.environ.get('SENDER_PASSWORD')
+
+    # Skip if email credentials are not configured
+    if not sender_email or not sender_password:
+        return False
+
+    # Skip if recipient email is empty
+    if not email:
+        return False
+
+    try:
+        # Create message
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "Confirmation - Je Quitte La France - 4 Juillet 2026"
+        message["From"] = sender_email
+        message["To"] = email
+        message["Date"] = formatdate(localtime=True)
+
+        # Create email body
+        lunch_text = f"{lunch_count} personne{'s' if lunch_count > 1 else ''}" if lunch_count > 0 else "aucune personne"
+        dinner_text = f"{dinner_count} personne{'s' if dinner_count > 1 else ''}" if dinner_count > 0 else "aucune personne"
+
+        text_content = f"""
+Bonjour {name},
+
+Merci d'avoir répondu à mon invitation.
+
+Je te confirme que j'ai bien noté ta présence avec:
+- {lunch_text} le midi; et
+- {dinner_text} le soir.
+
+Date: 4 juillet 2026
+Lieu: 10 rue d'Echevanne, 70100 Velesmes
+
+Possibilité de loger en tente/gîte selon disponibilité.
+
+Pour toutes questions, n'hésite pas à me contacter au 0770706027 ou directement en répondant à cet email.
+
+Hâte de te voir, je te tiens au courant!
+
+Théo
+        """
+
+        html_content = f"""
+<html>
+<body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #00ff00;">Bonjour {name},</h2>
+
+        <p>Merci d'avoir répondu à mon invitation.</p>
+
+        <p>Je te confirme que j'ai bien noté ta présence avec:</p>
+        <ul>
+            <li><strong>{lunch_text}</strong> le midi; et</li>
+            <li><strong>{dinner_text}</strong> le soir.</li>
+        </ul>
+
+        <div style="background-color: #f5f5f5; padding: 15px; border-left: 4px solid #00ff00; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>Date:</strong> 4 juillet 2026</p>
+            <p style="margin: 5px 0;"><strong>Lieu:</strong> 10 rue d'Echevanne, 70100 Velesmes</p>
+        </div>
+
+        <p>Possibilité de loger en tente/gîte selon disponibilité.</p>
+
+        <p>Pour toutes questions, n'hésite pas à me contacter au <strong>0770706027</strong> ou directement en répondant à cet email.</p>
+
+        <p>Hâte de te voir, je te tiens au courant!</p>
+
+        <p style="margin-top: 30px;">Théo</p>
+    </div>
+</body>
+</html>
+        """
+
+        # Attach both text and HTML versions
+        part1 = MIMEText(text_content, "plain")
+        part2 = MIMEText(html_content, "html")
+        message.attach(part1)
+        message.attach(part2)
+
+        # Send email
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, email, message.as_string())
+
+        return True
+
+    except Exception as e:
+        # Log email failures for debugging
+        print(f"Failed to send email: {e}", flush=True)
+        return False
+
 @app.route('/api/rsvp', methods=['POST'])
 def submit_rsvp():
     data = request.json
@@ -92,6 +203,9 @@ def submit_rsvp():
 
     conn.commit()
     conn.close()
+
+    # Send confirmation email
+    send_confirmation_email(name, email, lunch_count, dinner_count)
 
     return jsonify({'success': True, 'message': 'RSVP submitted successfully'})
 
