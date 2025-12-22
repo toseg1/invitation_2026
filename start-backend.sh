@@ -13,8 +13,8 @@ fi
 source venv/bin/activate
 
 # Install dependencies
-pip install -q flask flask-cors
+pip install -q flask flask-cors python-dotenv
 
 # Start the Flask server
-echo "Starting Flask API on port 5001..."
+echo "Starting Flask API on port 5002..."
 python3 api.py

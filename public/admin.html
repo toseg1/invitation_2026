@@ -5,6 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BASH 2025 - RSVP Admin</title>
     <style>
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+        .login-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(0, 217, 255, 0.3);
+            border-radius: 10px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .login-box h1 {
+            background: linear-gradient(90deg, #00d9ff, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.5);
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+        }
+        .login-box input:focus {
+            outline: none;
+            border-color: #00d9ff;
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+        }
+        .login-box button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, #00d9ff, #a855f7);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .login-box button:hover {
+            transform: scale(1.02);
+        }
+        .error-message {
+            color: #ef4444;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+    </style>
+    <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
@@ -271,8 +331,32 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>RSVP Admin Panel</h1>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container" style="display: none;">
+        <div class="login-box">
+            <h1>🔒 Admin Access</h1>
+            <div id="loginError" class="error-message" style="display: none;"></div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <input
+                    type="password"
+                    id="passwordInput"
+                    placeholder="Enter admin password"
+                    autocomplete="off"
+                    required
+                />
+                <button type="submit">Unlock Dashboard</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" class="container" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="margin: 0;">RSVP Admin Panel</h1>
+            <button onclick="logout()" style="background: linear-gradient(90deg, #ef4444, #dc2626); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                🚪 Logout
+            </button>
+        </div>
 
         <div id="messageContainer"></div>
 
@@ -345,6 +429,58 @@
     </div>
 
     <script>
+        // Authentication
+        function checkAuth() {
+            const isAuthenticated = localStorage.getItem('adminAuthenticated');
+            if (isAuthenticated === 'true') {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'block';
+                loadData();
+            } else {
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('adminDashboard').style.display = 'none';
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const password = document.getElementById('passwordInput').value;
+
+            try {
+                const response = await fetch('/api/admin/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    localStorage.setItem('adminAuthenticated', 'true');
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('adminDashboard').style.display = 'block';
+                    loadData();
+                } else {
+                    const errorDiv = document.getElementById('loginError');
+                    errorDiv.textContent = '❌ Invalid password. Please try again.';
+                    errorDiv.style.display = 'block';
+                    document.getElementById('passwordInput').value = '';
+                }
+            } catch (error) {
+                const errorDiv = document.getElementById('loginError');
+                errorDiv.textContent = '❌ Connection error. Please try again.';
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('adminAuthenticated');
+            location.reload();
+        }
+
+        // Initialize auth check on page load
+        checkAuth();
+
         let editingId = null;
 
         function showMessage(message, isSuccess) {
@@ -535,11 +671,12 @@
             }
         }
 
-        // Load data on page load
-        loadData();
-
-        // Auto-refresh every 30 seconds
-        setInterval(loadData, 30000);
+        // Auto-refresh every 30 seconds (only when authenticated)
+        setInterval(() => {
+            if (document.getElementById('adminDashboard').style.display === 'block') {
+                loadData();
+            }
+        }, 30000);
     </script>
 </body>
 </html>

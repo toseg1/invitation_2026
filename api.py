@@ -7,6 +7,10 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.utils import formatdate
 import threading
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app, resources={
@@ -347,6 +351,17 @@ def index():
 @app.route('/admin')
 def admin():
     return send_file('public/admin.html')
+
+@app.route('/api/admin/verify', methods=['POST'])
+def verify_admin():
+    data = request.json
+    password = data.get('password', '')
+    admin_password = os.environ.get('ADMIN_PASSWORD', 'admin')
+
+    if password == admin_password:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False}), 401
 
 if __name__ == '__main__':
     init_db()
